@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KIIMS Hospital - Patient Transfer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.3.4/axios.min.js"></script>
+</head>
+<body>
+    <h1>KIIMs Hospital - Patient Transfer</h1>
+
+    <form id="transferForm">
+        <input type="text" id="patientName" placeholder="Patient Name" required>
+        <input type="number" id="age" placeholder="Age" required>
+        <input type="text" id="condition" placeholder="Condition (e.g., Serious, Critical)" required>
+        <input type="text" id="disease" placeholder="Disease (e.g., Cancer, Stroke)" required>
+        <input type="text" id="contact" placeholder="Patient Contact Number" required>
+        <input type="text" id="familyContact" placeholder="Family Contact Number" required>
+        <input type="string" id="ambulanceno" placeholder="Ambulance Regd No." required>
+        <select id="toHospital">
+            <option value="SUM Hospital">SUM Hospital</option>
+            <option value="Utkal Hospital">Utkal Hospital</option>
+        </select>
+        <button type="submit">Send Patient</button>
+    </form>
+
+    <h2>Received Patient Transfers</h2>
+    <table id="patientTable">
+        <tr>
+            <th>Patient Name</th>
+            <th>Age</th>
+            <th>Condition</th>
+            <th>Disease</th>
+            <th>From Hospital</th>
+            <th>Patient Contact</th>
+            <th>Family Contact</th>
+            <th>Ambulance Regd No.</th>
+        </tr>
+    </table>
+
+    <script>
+        const hospitalName = "KIIMs Hospital"; // Change for each hospital
+
+        document.getElementById("transferForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const patientData = {
+                patientName: document.getElementById("patientName").value,
+                age: document.getElementById("age").value,
+                condition: document.getElementById("condition").value,
+                disease: document.getElementById("disease").value,
+                contact: document.getElementById("contact").value,
+                familyContact: document.getElementById("familyContact").value,
+                fromHospital: hospitalName,
+                toHospital: document.getElementById("toHospital").value,
+                ambulanceno: document.getElementById("ambulanceno").value
+            };
+
+            await axios.post("http://localhost:5000/send-patient", patientData);
+            alert("Patient transfer request sent!");
+            this.reset();
+        });
+
+        async function loadPatients() {
+            const res = await axios.get(`http://localhost:5000/received-patients/${hospitalName}`);
+            document.getElementById("patientTable").innerHTML = `
+                <tr>
+                    <th>Patient Name</th>
+                    <th>Age</th>
+                    <th>Condition</th>
+                    <th>Disease</th>
+                    <th>From Hospital</th>
+                    <th>Patient Contact</th>
+                    <th>Family Contact</th>
+                    <th>Ambulance Regd No</th>
+                </tr>
+                ` + res.data.map(p => `
+                <tr>
+                    <td>${p.patientName}</td>
+                    <td>${p.age}</td>
+                    <td>${p.condition}</td>
+                    <td>${p.disease}</td>
+                    <td>${p.fromHospital}</td>
+                    <td>${p.contact}</td>
+                    <td>${p.familyContact}</td>
+                    <td>${p.ambulanceno}</td>
+                </tr>
+            `).join("");
+        }
+
+        setInterval(loadPatients, 5000);
+    </script>
+</body>
+</html>
